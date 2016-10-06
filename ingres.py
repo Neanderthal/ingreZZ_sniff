@@ -4,11 +4,10 @@ from mitmproxy.script import concurrent
 from common import response_filter, decode_json
 from entities import proceed_entity, portal_to_db
 from event import proceed_event, user_to_db
-from models import User, db, PortalToTile, Tile, Portal
 
-db.drop_tables([User, Portal, Tile, PortalToTile])
+#db.drop_tables([User, Portal, Tile, PortalToTile])
 
-db.create_tables([User, Portal, Tile, PortalToTile])
+#db.create_tables([User, Portal, Tile, PortalToTile])
 log_filename = 'ingres_5'
 
 plext_worker = response_filter('getPlexts', decode_json(proceed_event({

@@ -1,5 +1,18 @@
 from peewee import *
 
+class Teams(object):
+    @staticmethod
+    def ENLIGHTENED():
+        return 0
+    @staticmethod
+    def RESISTANCE():
+        return 1
+
+    @staticmethod
+    def NEUTRAL():
+        return 2
+
+
 TEAMS = ['ENLIGHTENED', 'RESISTANCE', 'NEUTRAL']
 team_short = {'N':'NEUTRAL', 'E':'ENLIGHTENED', 'R':'RESISTANCE'}
 

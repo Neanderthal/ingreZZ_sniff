@@ -25,19 +25,20 @@ def user_to_db():
             #     "plain": "werelobz",
             #     "team": "ENLIGHTENED"
             # }
-            team_ = res['team']
-            user, created = User.get_or_create(
-                name = res['plain'])
-            user.team = TEAMS.index(team_)
+            if ('Your Portal' not in res['plain']):
+                team_ = res['team']
+                user, created = User.get_or_create(
+                    name = res['plain'])
+                user.team = TEAMS.index(team_)
 
-            if created:
-                print(str(user.name) + ' saved!')
-            else:
-                print(str(user.name) + ' exist')
+                if created:
+                    print(str(user.name) + ' saved!')
+                else:
+                    print(str(user.name) + ' exist')
 
-            user.save()
+                user.save()
         except KeyError as key:
-            print_exception('KEY!!!! ', key)
+            print_exception('KEY!!!! ' + str(res), key)
             continue
         except Exception as e:
             print_exception('FUCCCCCCK!!!! ', e)
