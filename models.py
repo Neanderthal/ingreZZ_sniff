@@ -1,5 +1,25 @@
 from peewee import *
 
+class CardTypeEnum(object):
+    """
+    Декада
+    """
+    ENLIGHTENED = 0
+    RESISTANCE = 1
+    NEUTRAL = 2
+
+    values = {
+        ENLIGHTENED: u'ENLIGHTENED',
+        RESISTANCE: u'RESISTANCE',
+        NEUTRAL: u'NEUTRAL',
+    }
+
+    values = {
+        ENLIGHTENED: u'ENLIGHTENED',
+        RESISTANCE: u'RESISTANCE',
+        NEUTRAL: u'NEUTRAL',
+    }
+
 class Teams(object):
     @staticmethod
     def ENLIGHTENED():

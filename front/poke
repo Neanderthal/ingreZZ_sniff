@@ -1,0 +1,119 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
+import json
+
+import flask
+from flask import Flask, render_template
+from flask.ext.googlemaps import GoogleMaps, Map, icons
+from geopy import Location
+from geopy.geocoders import GoogleV3
+
+from s2sphere import *
+
+from models import Portal, TEAMS, Teams
+
+GOOGLEMAPS_KEY = 'AIzaSyB9b8a6ZJ1aMQQwO8SVKjCcS3ESk5H5-ZA'
+NEXT_LAT = 0
+NEXT_LONG = 0
+
+def create_app():
+    app = Flask(__name__, template_folder='templates')
+
+    GoogleMaps(app, key=GOOGLEMAPS_KEY)
+    return app
+
+app = create_app()
+
+
+@app.route('/data')
+def data():
+    """ Gets all the PokeMarkers via REST """
+    return json.dumps(get_pokemarkers())
+
+@app.route('/raw_data')
+def raw_data():
+    """ Gets raw data for pokemons/gyms/pokestops via REST """
+    portals = Portal.select()
+    return flask.jsonify(pokemons=portals)
+
+
+@app.route('/config')
+def config():
+    """ Gets the settings for the Google Maps via REST"""
+    location = get_home()
+
+    center = {
+        'lat': location.latitude,
+        'lng': location.longitude,
+        'zoom': 15,
+        'identifier': "fullmap"
+    }
+    return json.dumps(center)
+
+
+def get_home():
+    geocoder = GoogleV3(api_key=GOOGLEMAPS_KEY)
+    location = geocoder.geocode("Невский просп. д.132")
+    return location
+
+
+@app.route('/')
+def full_map():
+    return render_template(
+        'fullmap.html', key=GOOGLEMAPS_KEY, fullmap=get_map(), auto_refresh=True)
+
+
+@app.route('/next_loc')
+def next_loc():
+    lat = flask.request.args.get('lat', '')
+    lon = flask.request.args.get('lon', '')
+    if not (lat and lon):
+        print('[-] Invalid next location: %s,%s' % (lat, lon))
+    else:
+        print('[+] Saved next location as %s,%s' % (lat, lon))
+        NEXT_LAT = float(lat)
+        NEXT_LONG = float(lon)
+        return 'ok'
+
+class PokeMarker(object):
+    def __init__(self, portal):
+
+        self.icon = icons.dots.red
+        if portal.team == Teams.ENLIGHTENED():
+            self.icon = icons.dots.green
+        elif portal.team == Teams.RESISTANCE():
+            self.icon = icons.dots.blue
+
+        self.lat = portal.e6lat/1e6
+        self.lng = portal.e6lng/1e6
+        self.infobox = portal.name.encode("utf-8")
+        self.type = 'custom'.encode("utf-8")
+        self.key = portal.name.encode("utf-8")
+
+    def to_dict(self):
+        return self.__dict__
+
+def get_pokemarkers():
+    pokeMarkers = []
+    for portal in Portal.select():
+        pokeMarkers.append(PokeMarker(portal).to_dict())
+
+    return pokeMarkers
+
+
+def get_map():
+    location = get_home()
+    fullmap = Map(
+        identifier="fullmap2",
+        style='height:100%;width:100%;top:0;left:0;position:absolute;z-index:200;',
+        lat=location.latitude,
+        lng=location.longitude,
+        markers=get_pokemarkers(),
+        zoom='15', )
+    return fullmap
+
+
+if __name__ == '__main__':
+    app.run(debug=True, threaded=True, host='localhost', port=8886)
